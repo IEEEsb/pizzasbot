@@ -127,6 +127,17 @@ var handleMessage=function(message){
 				}
 				console.log(orders[chatId].pizzas);
 			}else{
+				for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
+					var awaitingCustom = orders[chatId].awaitingCustoms[i];
+					if(awaitingCustom.user == userName){
+						orders[chatId].pizzas.push({
+							client:userName,
+							halfs:[text,text]
+						});
+						console.log("custom: ",orders[chatId].pizzas);
+						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+					}
+				}
 				if(text == 'Por mitades'){
 					orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
 					orders[chatId].pizzas.push({
@@ -139,17 +150,6 @@ var handleMessage=function(message){
 				if(text == 'Custom'){
 					orders[chatId].awaitingCustoms.push({user:userName});
 					api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza tambien",reply_markup:JSON.stringify({selective:true})},function(){});
-				}
-				for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
-					var awaitingCustom = orders[chatId].awaitingCustoms[i];
-					if(awaitingCustom.user == userName){
-						orders[chatId].pizzas.push({
-							client:userName,
-							halfs:[text,text]
-						});
-						console.log("custom: ",orders[chatId].pizzas);
-						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
-					}
 				}
 
 			}

@@ -71,8 +71,8 @@ var pizzasKeyboard = function(halfsEnabled,customEnabled){
 	return keyboard;
 };
 
-var sendMessage = function(chatId,text){
-	api.sendMessage({chat_id:chatId,text:text,reply_markup:JSON.stringify({force_reply:false,selective:true})},function(){});
+var sendMessage = function(chatId,text,replyTo){
+	api.sendMessage({chat_id:chatId,text:text,reply_to_message_id:replyTo,reply_markup:JSON.stringify({force_reply:false,selective:true})},function(){});
 };
 
 var resumen = function(order){
@@ -96,7 +96,7 @@ var handleMessage=function(message){
 		switch(true){
 			case text.search(/\/pedido/i)==0:
 			if(orders[chatId]&&orders[chatId].active){
-				sendMessage(chatId,"Termina el anterior pedido antes de crear uno nuevo, no me seas ansias 😂");
+				sendMessage(chatId,"Termina el anterior pedido antes de crear uno nuevo, no me seas ansias 😂",message.message_id);
 			}else{
 				orders[chatId]= {active : true , pizzas:[] ,awaitingHalfs:[],awaitingCustoms:[]};
 				api.sendMessage({chat_id:chatId,text:"Es la hora del gordeo! Quien quiere pizzas??? 🍕🍕🍕🍕🍕🍕🍕",reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(true,true),selective:false})},function(){});
@@ -107,7 +107,7 @@ var handleMessage=function(message){
 				orders[chatId].active = false;
 				sendMessage(chatId,resumen(orders[chatId]));
 			}else{
-				sendMessage(chatId,"Terminame esta");
+				sendMessage(chatId,"Termíname esta 😘",message.message_id);
 			}
 			break;
 			case text.search(/\/dieta/i)==0:
@@ -153,6 +153,7 @@ var handleMessage=function(message){
 					}
 					console.log(orders[chatId].pizzas);
 				}else{
+					var wasCustom = false;
 					for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
 						var awaitingCustom = orders[chatId].awaitingCustoms[i];
 						if(awaitingCustom.user == userName){
@@ -163,23 +164,25 @@ var handleMessage=function(message){
 							console.log("custom: ",orders[chatId].pizzas);
 							orders[chatId].awaitingCustoms.splice(i,1);
 							api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+							wasCustom = true;
 						}
 					}
-					if(text == 'Por mitades'){
-						orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
-						orders[chatId].pizzas.push({
-							client:userName,
-							halfs:["Mitad vacía","Mitad vacía"]
-						});
-						console.log("mitades");
-						api.sendMessage({chat_id:chatId,text:"Que peñazo... elige primera mitad anda 😪",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
-					}else{
-						if(text == 'Custom'){
-							orders[chatId].awaitingCustoms.push({user:userName});
-							api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza también *inserte sticker de charlas aquí*",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+					if(!wasCustom){
+						if(text == 'Por mitades'){
+							orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
+							orders[chatId].pizzas.push({
+								client:userName,
+								halfs:["Mitad vacía","Mitad vacía"]
+							});
+							console.log("mitades");
+							api.sendMessage({chat_id:chatId,text:"Que peñazo... elige primera mitad anda 😪",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+						}else{
+							if(text == 'Custom'){
+								orders[chatId].awaitingCustoms.push({user:userName});
+								api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza también *inserte sticker de charlas aquí*",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+							}
 						}
 					}
-
 				}
 			}else{
 				api.sendMessage({chat_id:chatId,text:"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});

@@ -185,7 +185,8 @@ var handleMessage=function(message){
 					}
 				}
 			}else{
-				api.sendMessage({chat_id:chatId,text:"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+				if(!text.search(/\//i)==0)
+					api.sendMessage({chat_id:chatId,text:"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 			}
 			break;
 		}

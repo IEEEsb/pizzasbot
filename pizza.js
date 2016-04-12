@@ -133,10 +133,10 @@ var handleMessage=function(message){
 							console.log("was half: ",awaitingHalf);
 							if(awaitingHalf.halfIndex==2){
 								orders[chatId].awaitingHalfs.splice(i,1);
-								api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+								api.sendMessage({chat_id:message.chat.id,text:(text==="Hawaiana"?"MEDIA PIZZA CON PIÑA? SRSLY? por esta vez la agrego al pedido, pero que no se repita. Parguela.":"Pos fale"),reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 							}
 							else{
-								api.sendMessage({chat_id:chatId,text:"Elige segunda mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+								api.sendMessage({chat_id:chatId,text:(text==="Hawaiana"?"Joder que parguela eres, dime la otra mitad anda.":"Dime la segunda mitad"),reply_to_message_id:message.message_id,reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
 							}
 							break;
 						}
@@ -146,7 +146,7 @@ var handleMessage=function(message){
 							client:userName,
 							halfs:[text,text]
 						});
-						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+						api.sendMessage({chat_id:message.chat.id,text:(text==="Hawaiana"?"PIZZA CON PIÑA? SRSLY? por esta vez la agrego al pedido, pero que no se repita. Parguela.":"Pos fale"),reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 					}
 					console.log(orders[chatId].pizzas);
 				}else{

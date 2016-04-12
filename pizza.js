@@ -82,6 +82,7 @@ var resumen = function(order){
 		var pizza = order.pizzas[i];
 		message+= pizza.client+": "+pizza.halfs+"\n";
 	}
+	return message;
 }
 
 var handleMessage=function(message){

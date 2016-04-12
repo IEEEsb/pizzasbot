@@ -109,11 +109,12 @@ var handleMessage=function(message){
 						wasHalf = true;
 						console.log("was half: ",awaitingHalf);
 						if(awaitingHalf.halfIndex==2){
-							orders[chatId].awaitingHalfs.splice(i,1);}
+							orders[chatId].awaitingHalfs.splice(i,1);
+							api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+						}
 						else{
 							api.sendMessage({chat_id:chatId,text:"Elige segunda mitad",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
 						}
-						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 						break;
 					}
 				}

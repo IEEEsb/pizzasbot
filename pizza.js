@@ -107,6 +107,17 @@ var handleMessage=function(message){
 				sendMessage(chatId,"Terminame esta");
 			}
 			break;
+			case text.search(/\/dieta/i)==0:
+			if(orders[chatId]&&orders[chatId].active)
+				for (var i = orders[chatId].pizzas.length - 1; i >= 0; i--) {
+					var pizza = orders[chatId].pizzas[i];
+					if(pizza.client == userName){
+						orders[chatId].pizzas.splice(i,1);
+					}
+				}
+				api.sendMessage({chat_id:message.chat.id,text:"Tu ya no comes, parguela",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+			}
+			break;
 			default:
 			if(orders[chatId]&&orders[chatId].active){
 				var index = pizzas.indexOf(text);

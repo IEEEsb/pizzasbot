@@ -135,6 +135,7 @@ var handleMessage=function(message){
 							halfs:[text,text]
 						});
 						console.log("custom: ",orders[chatId].pizzas);
+						orders[chatId].awaitingCustoms.splice(i,1);
 						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 					}
 				}

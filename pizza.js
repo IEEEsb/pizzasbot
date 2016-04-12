@@ -75,6 +75,15 @@ var sendMessage = function(chatId,text){
 	api.sendMessage({chat_id:chatId,text:text,reply_markup:JSON.stringify({force_reply:false,selective:true})},function(){});
 };
 
+var resumen = function(order){
+	var message = "";
+	message+="Pedido de pizzas terminado, el que no haya pedido se joda. Son estas: \n";
+	for (var i = order.pizzas.length - 1; i >= 0; i--) {
+		var pizza = order.pizzas[i];
+		message+= pizza.client+": "+pizza.halfs+"\n";
+	}
+}
+
 var handleMessage=function(message){
 	var text=message.text;
 	var chatId=message.chat.id;
@@ -89,11 +98,12 @@ var handleMessage=function(message){
 		}
 		break;
 		case text.search(/\/terminar/i)==0:
-		console.log("Pelea: "+userId);
-		pelea = true;
-		api.sendMessage({chat_id:message.chat.id,text:"/toalla /jarvis",reply_markup:JSON.stringify({force_reply:false,selective:true})},function(err, data){
-			console.log(err,data);
-		});
+		if(orders[chatId]&&orders[chatId].active){
+			orders[chatId]&&orders[chatId].active = false;
+			sendMessage(chatId,resumen(orders[chatId]));
+		}else{
+				sendMessage(chatId,"Terminame esta");
+			}
 		break;
 		default:
 		if(orders[chatId]&&orders[chatId].active){

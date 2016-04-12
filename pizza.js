@@ -80,7 +80,7 @@ var resumen = function(order){
 	message+="Pedido de pizzas terminado, el que no haya pedido se joda. Son estas: \n";
 	for (var i = order.pizzas.length - 1; i >= 0; i--) {
 		var pizza = order.pizzas[i];
-		message+= pizza.client+": "+pizza.halfs+"\n";
+		message+= pizza.client+": "+(pizza.halfs[0]===pizza.halfs[1]?pizza.halfs[0]:pizza.halfs)+"\n";
 	}
 	return message;
 }

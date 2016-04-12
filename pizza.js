@@ -88,85 +88,87 @@ var resumen = function(order){
 var handleMessage=function(message){
 	var text=message.text||"";
 	var chatId=message.chat.id;
-	var userName=message.chat.title||message.chat.first_name;
-	switch(true){
-		case text.search(/\/pedido/i)==0:
-		if(orders[chatId]&&orders[chatId].active){
-			sendMessage(chatId,"Termina el anterior pedido antes de crear uno nuevo");
-		}else{
-			orders[chatId]= {active : true , pizzas:[] ,awaitingHalfs:[],awaitingCustoms:[]};
-			api.sendMessage({chat_id:chatId,text:"Elige pizza",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(true,true),selective:false})},function(){});
-		}
-		break;
-		case text.search(/\/terminar/i)==0:
-		if(orders[chatId]&&orders[chatId].active){
-			orders[chatId].active = false;
-			sendMessage(chatId,resumen(orders[chatId]));
-		}else{
+	if(message.from){
+		var userName = message.from.username || message.from.first_name;
+		switch(true){
+			case text.search(/\/pedido/i)==0:
+			if(orders[chatId]&&orders[chatId].active){
+				sendMessage(chatId,"Termina el anterior pedido antes de crear uno nuevo");
+			}else{
+				orders[chatId]= {active : true , pizzas:[] ,awaitingHalfs:[],awaitingCustoms:[]};
+				api.sendMessage({chat_id:chatId,text:"Elige pizza",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(true,true),selective:false})},function(){});
+			}
+			break;
+			case text.search(/\/terminar/i)==0:
+			if(orders[chatId]&&orders[chatId].active){
+				orders[chatId].active = false;
+				sendMessage(chatId,resumen(orders[chatId]));
+			}else{
 				sendMessage(chatId,"Terminame esta");
 			}
-		break;
-		default:
-		if(orders[chatId]&&orders[chatId].active){
-			var index = pizzas.indexOf(text);
-			console.log(text);
-			if(index!=-1){
-				var wasHalf = false;
-				for (var i = orders[chatId].awaitingHalfs.length - 1; i >= 0; i--) {
-					var awaitingHalf = orders[chatId].awaitingHalfs[i];
-					if(awaitingHalf.user == userName){
-						var pizza = orders[chatId].pizzas[awaitingHalf.pizzaIndex];
-						pizza.halfs[awaitingHalf.halfIndex++] = text;
-						wasHalf = true;
-						console.log("was half: ",awaitingHalf);
-						if(awaitingHalf.halfIndex==2){
-							orders[chatId].awaitingHalfs.splice(i,1);
-							api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+			break;
+			default:
+			if(orders[chatId]&&orders[chatId].active){
+				var index = pizzas.indexOf(text);
+				console.log(text);
+				if(index!=-1){
+					var wasHalf = false;
+					for (var i = orders[chatId].awaitingHalfs.length - 1; i >= 0; i--) {
+						var awaitingHalf = orders[chatId].awaitingHalfs[i];
+						if(awaitingHalf.user == userName){
+							var pizza = orders[chatId].pizzas[awaitingHalf.pizzaIndex];
+							pizza.halfs[awaitingHalf.halfIndex++] = text;
+							wasHalf = true;
+							console.log("was half: ",awaitingHalf);
+							if(awaitingHalf.halfIndex==2){
+								orders[chatId].awaitingHalfs.splice(i,1);
+								api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+							}
+							else{
+								api.sendMessage({chat_id:chatId,text:"Elige segunda mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+							}
+							break;
 						}
-						else{
-							api.sendMessage({chat_id:chatId,text:"Elige segunda mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
-						}
-						break;
 					}
-				}
-				if(!wasHalf){
-					orders[chatId].pizzas.push({
-						client:userName,
-						halfs:[text,text]
-					});
-					api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
-				}
-				console.log(orders[chatId].pizzas);
-			}else{
-				for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
-					var awaitingCustom = orders[chatId].awaitingCustoms[i];
-					if(awaitingCustom.user == userName){
+					if(!wasHalf){
 						orders[chatId].pizzas.push({
 							client:userName,
 							halfs:[text,text]
 						});
-						console.log("custom: ",orders[chatId].pizzas);
-						orders[chatId].awaitingCustoms.splice(i,1);
 						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 					}
-				}
-				if(text == 'Por mitades'){
-					orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
-					orders[chatId].pizzas.push({
-						client:userName,
-						halfs:["Mitad vacía","Mitad vacía"]
-					});
-					console.log("mitades");
-					api.sendMessage({chat_id:chatId,text:"Elige primera mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
-				}
-				if(text == 'Custom'){
-					orders[chatId].awaitingCustoms.push({user:userName});
-					api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza tambien",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
-				}
+					console.log(orders[chatId].pizzas);
+				}else{
+					for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
+						var awaitingCustom = orders[chatId].awaitingCustoms[i];
+						if(awaitingCustom.user == userName){
+							orders[chatId].pizzas.push({
+								client:userName,
+								halfs:[text,text]
+							});
+							console.log("custom: ",orders[chatId].pizzas);
+							orders[chatId].awaitingCustoms.splice(i,1);
+							api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+						}
+					}
+					if(text == 'Por mitades'){
+						orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
+						orders[chatId].pizzas.push({
+							client:userName,
+							halfs:["Mitad vacía","Mitad vacía"]
+						});
+						console.log("mitades");
+						api.sendMessage({chat_id:chatId,text:"Elige primera mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+					}
+					if(text == 'Custom'){
+						orders[chatId].awaitingCustoms.push({user:userName});
+						api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza tambien",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+					}
 
+				}
 			}
+			break;
 		}
-		break;
 	}
 };
 

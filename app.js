@@ -84,7 +84,7 @@ var handleMessage=function(message){
 		if(orders[chatId]&&orders[chatId].active){
 			sendMessage(chatId,"Termina el anterior pedido antes de crear uno nuevo");
 		}else{
-			orders[chatId]= {active : true , pizzas:[] ,awaitingHalfs:[]};
+			orders[chatId]= {active : true , pizzas:[] ,awaitingHalfs:[],awaitingCustoms:[]};
 			api.sendMessage({chat_id:chatId,text:"Elige pizza",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(true,true),selective:false})},function(){});
 		}
 		break;
@@ -123,9 +123,9 @@ var handleMessage=function(message){
 						client:userName,
 						halfs:[text,text]
 					});
+					api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 				}
 				console.log(orders[chatId].pizzas);
-				api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 			}else{
 				if(text == 'Por mitades'){
 					orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
@@ -136,6 +136,22 @@ var handleMessage=function(message){
 					console.log("mitades");
 					api.sendMessage({chat_id:chatId,text:"Elige primera mitad",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
 				}
+				if(text == 'Custom'){
+					orders[chatId].awaitingCustoms.push({user:userName});
+					api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza tambien",reply_markup:JSON.stringify({selective:true})},function(){});
+				}
+				for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
+					var awaitingCustom = orders[chatId].awaitingCustoms[i];
+					if(awaitingCustom.user == userName){
+						orders[chatId].pizzas.push({
+							client:userName,
+							halfs:[text,text]
+						});
+						console.log("custom: ",orders[chatId].pizzas);
+						api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+					}
+				}
+
 			}
 		}
 		break;

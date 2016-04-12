@@ -99,7 +99,7 @@ var handleMessage=function(message){
 		break;
 		case text.search(/\/terminar/i)==0:
 		if(orders[chatId]&&orders[chatId].active){
-			orders[chatId]&&orders[chatId].active = false;
+			orders[chatId].active = false;
 			sendMessage(chatId,resumen(orders[chatId]));
 		}else{
 				sendMessage(chatId,"Terminame esta");

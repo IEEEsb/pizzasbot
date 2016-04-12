@@ -86,7 +86,7 @@ var resumen = function(order){
 }
 
 var handleMessage=function(message){
-	var text=message.text;
+	var text=message.text||"";
 	var chatId=message.chat.id;
 	var userName=message.chat.title||message.chat.first_name;
 	switch(true){

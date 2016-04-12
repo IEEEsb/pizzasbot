@@ -108,7 +108,7 @@ var handleMessage=function(message){
 			}
 			break;
 			case text.search(/\/dieta/i)==0:
-			if(orders[chatId]&&orders[chatId].active)
+			if(orders[chatId]&&orders[chatId].active){
 				for (var i = orders[chatId].pizzas.length - 1; i >= 0; i--) {
 					var pizza = orders[chatId].pizzas[i];
 					if(pizza.client == userName){

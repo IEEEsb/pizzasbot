@@ -113,7 +113,7 @@ var handleMessage=function(message){
 							api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 						}
 						else{
-							api.sendMessage({chat_id:chatId,text:"Elige segunda mitad",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+							api.sendMessage({chat_id:chatId,text:"Elige segunda mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
 						}
 						break;
 					}
@@ -145,11 +145,11 @@ var handleMessage=function(message){
 						halfs:["Mitad vacía","Mitad vacía"]
 					});
 					console.log("mitades");
-					api.sendMessage({chat_id:chatId,text:"Elige primera mitad",reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+					api.sendMessage({chat_id:chatId,text:"Elige primera mitad",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
 				}
 				if(text == 'Custom'){
 					orders[chatId].awaitingCustoms.push({user:userName});
-					api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza tambien",reply_markup:JSON.stringify({selective:true})},function(){});
+					api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza tambien",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
 				}
 
 			}

@@ -105,7 +105,7 @@ var handleMessage=function(message){
       case text.search(/\/terminar/i)==0:
       if(orders[chatId]&&orders[chatId].active){
         orders[chatId].active = false;
-        sendMessage(chatId,resumen(orders[chatId]));
+          api.sendMessage({chat_id:chatId,text:resumen(orders[chatId]),reply_markup:JSON.stringify({hide_keyboard:true,selective:false})},function(){});
       }else{
         sendMessage(chatId,"Termíname esta 😘",message.message_id);
       }

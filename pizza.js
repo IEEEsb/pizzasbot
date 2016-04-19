@@ -75,12 +75,12 @@ var sendMessage = function(chatId,text,replyTo){
   api.sendMessage({chat_id:chatId,text:text,reply_to_message_id:replyTo,reply_markup:JSON.stringify({force_reply:false,selective:true})},function(){});
 };
 
-var resumen = function(order){
+var resumen = function(order,finished){
   if(order.pizzas.length==0){
     return "No me molesteis para no pedir ninguna pizza, bastardos";
   }
   var message = "";
-  message+="Pedido de pizzas terminado, el que no haya pedido se joda. Son estas: \n";
+  message+=finished?"Pedido de pizzas terminado, el que no haya pedido se joda. Son estas: \n":"Hasta el momento me habéis pedido:\n";
   for (var i = order.pizzas.length - 1; i >= 0; i--) {
     var pizza = order.pizzas[i];
     message+= pizza.client+": "+(pizza.halfs[0]===pizza.halfs[1]?pizza.halfs[0]:pizza.halfs)+"\n";
@@ -105,9 +105,17 @@ var handleMessage=function(message){
       case text.search(/\/terminar/i)==0:
       if(orders[chatId]&&orders[chatId].active){
         orders[chatId].active = false;
-          api.sendMessage({chat_id:chatId,text:resumen(orders[chatId]),reply_markup:JSON.stringify({hide_keyboard:true,selective:false})},function(){});
+          api.sendMessage({chat_id:chatId,text:resumen(orders[chatId],true),reply_markup:JSON.stringify({hide_keyboard:true,selective:false})},function(){});
       }else{
         sendMessage(chatId,"Termíname esta 😘",message.message_id);
+      }
+      break;
+      case text.search(/\/resumen/i)==0:
+      if(orders[chatId]&&orders[chatId].active){
+        orders[chatId].active = false;
+        sendMessage(chatId,resumen(orders[chatId],false),message.message_id);
+      }else{
+        sendMessage(chatId,"Que resumen ni que nada 😤",message.message_id);
       }
       break;
       case text.search(/\/dieta/i)==0:

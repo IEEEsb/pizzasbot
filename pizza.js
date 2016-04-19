@@ -112,7 +112,6 @@ var handleMessage=function(message){
       break;
       case text.search(/\/resumen/i)==0:
       if(orders[chatId]&&orders[chatId].active){
-        orders[chatId].active = false;
         sendMessage(chatId,resumen(orders[chatId],false),message.message_id);
       }else{
         sendMessage(chatId,"Que resumen ni que nada 😤",message.message_id);

@@ -125,6 +125,18 @@ var handleMessage=function(message){
             orders[chatId].pizzas.splice(i,1);
           }
         }
+        for (var i = orders[chatId].awaitingHalfs.length - 1; i >= 0; i--) {
+          var half = orders[chatId].awaitingHalfs[i];
+          if(half.user === userName){
+            orders[chatId].awaitingHalfs.splice(i,1);
+          }
+        }
+        for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
+          var custom = orders[chatId].awaitingCustoms[i];
+          if(custom.user === userName){
+            orders[chatId].awaitingCustoms.splice(i,1);
+          }
+        }
         api.sendMessage({chat_id:message.chat.id,text:"Tu ya no comes, parguela 🌵",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
       }
       break;

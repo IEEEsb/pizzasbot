@@ -17,7 +17,10 @@ var autoUpdate=function(callback){
         callback(data[i].message);
       }
     }
-    autoUpdate(callback);
+    setTimeout(function(){
+      //one-second polling
+      autoUpdate(callback);
+    },1000);
   });
 };
 

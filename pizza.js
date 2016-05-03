@@ -1,28 +1,7 @@
-var telegram = require('telegram-bot-api');
+var TelegramBot = require('node-telegram-bot-api');
 var orders = {};
 
-var api = new telegram({
-  token: process.env.PIZZA_BOT_TOKEN
-});
-
-var lastOffset=null;
-
-var autoUpdate=function(callback){
-  api.getUpdates({limit:100,offset:lastOffset||undefined},function(err,data){
-    if(err) 
-      console.log(err);
-    if(data){
-      for(var i=0;i<data.length;i++){
-        lastOffset=data[i].update_id+1;
-        callback(data[i].message);
-      }
-    }
-    setTimeout(function(){
-      //one-second polling
-      autoUpdate(callback);
-    },1000);
-  });
-};
+var bot = new TelegramBot( process.env.PIZZA_BOT_TOKEN, {polling: true});
 
 var createButton = function(text){
   return text;
@@ -75,7 +54,7 @@ var pizzasKeyboard = function(halfsEnabled,customEnabled){
 };
 
 var sendMessage = function(chatId,text,replyTo){
-  api.sendMessage({chat_id:chatId,text:text,reply_to_message_id:replyTo,reply_markup:JSON.stringify({force_reply:false,selective:true})},function(){});
+  bot.sendMessage(chatId,text,replyTo?{reply_to_message_id:replyTo,reply_markup:JSON.stringify({force_reply:false,selective:true})}:{}).then(function(){});
 };
 
 var resumen = function(order,finished){
@@ -102,13 +81,13 @@ var handleMessage=function(message){
         sendMessage(chatId,"Termina el anterior pedido antes de crear uno nuevo, no me seas ansias 😂",message.message_id);
       }else{
         orders[chatId]= {active : true , pizzas:[] ,awaitingHalfs:[],awaitingCustoms:[]};
-        api.sendMessage({chat_id:chatId,text:"Es la hora del gordeo! Quien quiere pizzas??? 🍕🍕🍕🍕🍕🍕🍕",reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(true,true),selective:false})},function(){});
+        bot.sendMessage(chatId,"Es la hora del gordeo! Quien quiere pizzas??? 🍕🍕🍕🍕🍕🍕🍕",{reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(true,true),selective:false})}).then(function(){});
       }
       break;
       case text.search(/\/terminar/i)==0:
       if(orders[chatId]&&orders[chatId].active){
         orders[chatId].active = false;
-          api.sendMessage({chat_id:chatId,text:resumen(orders[chatId],true),reply_markup:JSON.stringify({hide_keyboard:true,selective:false})},function(){});
+          bot.sendMessage(chatId,resumen(orders[chatId],true),{reply_markup:JSON.stringify({hide_keyboard:true,selective:false})}).then(function(){});
       }else{
         sendMessage(chatId,"Termíname esta 😘",message.message_id);
       }
@@ -140,7 +119,7 @@ var handleMessage=function(message){
             orders[chatId].awaitingCustoms.splice(i,1);
           }
         }
-        api.sendMessage({chat_id:message.chat.id,text:"Tu ya no comes, parguela 🌵",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+        sendMessage(message.chat.id,"Tu ya no comes, parguela 🌵",message.message_id);
       }
       break;
       default:
@@ -158,10 +137,10 @@ var handleMessage=function(message){
               console.log("was half: ",awaitingHalf);
               if(awaitingHalf.halfIndex==2){
                 orders[chatId].awaitingHalfs.splice(i,1);
-                api.sendMessage({chat_id:message.chat.id,text:(text==="Hawaiana"?"MEDIA PIZZA CON PIÑA? SRSLY 😒? por esta vez la agrego al pedido, pero que no se repita. Parguela.":"Pos fale"),reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+                sendMessage(message.chat.id,(text==="Hawaiana"?"MEDIA PIZZA CON PIÑA? SRSLY 😒? por esta vez la agrego al pedido, pero que no se repita. Parguela.":"Pos fale"),message.message_id);
               }
               else{
-                api.sendMessage({chat_id:chatId,text:(text==="Hawaiana"?"Joder que parguela eres 😒, dime la otra mitad anda.":"Dime la segunda mitad"),reply_to_message_id:message.message_id,reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+                sendMessage(chatId,(text==="Hawaiana"?"Joder que parguela eres 😒, dime la otra mitad anda.":"Dime la segunda mitad"),message.message_id);
               }
               break;
             }
@@ -171,7 +150,7 @@ var handleMessage=function(message){
               client:userName,
               halfs:[text,text]
             });
-            api.sendMessage({chat_id:message.chat.id,text:(text==="Hawaiana"?"PIZZA CON PIÑA? SRSLY😒😒😒😒😒? por esta vez la agrego al pedido, pero que no se repita. Parguela😘.":"Pos fale"),reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+            sendMessage(chatId,(text==="Hawaiana"?"PIZZA CON PIÑA? SRSLY😒😒😒😒😒? por esta vez la agrego al pedido, pero que no se repita. Parguela😘.":"Pos fale"),message.message_id);
           }
           console.log(orders[chatId].pizzas);
         }else{
@@ -185,7 +164,7 @@ var handleMessage=function(message){
               });
               console.log("custom: ",orders[chatId].pizzas);
               orders[chatId].awaitingCustoms.splice(i,1);
-              api.sendMessage({chat_id:message.chat.id,text:"Pos fale",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+              sendMessage(message.chat.id,"Pos fale",message.message_id);
               wasCustom = true;
             }
           }
@@ -197,25 +176,26 @@ var handleMessage=function(message){
                 halfs:["Mitad vacía","Mitad vacía"]
               });
               console.log("mitades");
-              api.sendMessage({chat_id:chatId,text:"Que peñazo... elige primera mitad anda 😪",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({one_time_keyboard:true,keyboard:pizzasKeyboard(false,false),selective:true})},function(){});
+              sendMessage(message.chat.id,"Que peñazo... elige primera mitad anda 😪",message.message_id);
             }else{
               if(text == 'Custom'){
                 orders[chatId].awaitingCustoms.push({user:userName});
-                api.sendMessage({chat_id:chatId,text:"Dime como la quieres. Y la pizza también *inserte sticker de charlas aquí*",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+               sendMessage(chatId,"Dime como la quieres. Y la pizza también *inserte sticker de charlas aquí*",message.message_id);
               }
             }
           }
         }
       }else{
         if(!text.search(/\//i)==0)
-          api.sendMessage({chat_id:chatId,text:"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",reply_to_message_id:message.message_id,reply_markup:JSON.stringify({selective:true})},function(){});
+          sendMessage(chatId,"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",message.message_id);
       }
       break;
     }
   }
 };
 
-autoUpdate(handleMessage);
+bot.on('message', handleMessage);
+
 
 
 

@@ -8,36 +8,36 @@ var createButton = function(text){
 };
 
 var pizzas = [
-  "Bacon Cheeseburger",
-  "Tejana con Cebolla",
-  "Tejana",
-  "Bacon Crispy",
-  "Chicken Fan Barbacoa",
-  "Barbacoa Crème Queso",
-  "Barbacoa Crème Tomate",
-  "Especial de la casa cebolla",
-  "Calzzone Clásica",
-  "Especial de la casa champiñón",
-  "Jalisco",
-  "Wok",
-  "Hot Dog",
-  "Telepizza Supreme",
-  "Top Cheese & Chicken",
-  "Delicheese",
-  "4 Quesos",
-  "Formaggio",
-  "Lasaña Especialidad",
-  "Japonesa",
-  "Carbonara Cebolla",
-  "Hawaiana",
-  "Florentina",
-  "De la Huerta",
-  "César Deluxe",
-  "Barbacoa",
-  "Carbonara",
-  "La Ibérica",
-  "Burger",
-  "Nachos"
+"Bacon Cheeseburger",
+"Tejana con Cebolla",
+"Tejana",
+"Bacon Crispy",
+"Chicken Fan Barbacoa",
+"Barbacoa Crème Queso",
+"Barbacoa Crème Tomate",
+"Especial de la casa cebolla",
+"Calzzone Clásica",
+"Especial de la casa champiñón",
+"Jalisco",
+"Wok",
+"Hot Dog",
+"Telepizza Supreme",
+"Top Cheese & Chicken",
+"Delicheese",
+"4 Quesos",
+"Formaggio",
+"Lasaña Especialidad",
+"Japonesa",
+"Carbonara Cebolla",
+"Hawaiana",
+"Florentina",
+"De la Huerta",
+"César Deluxe",
+"Barbacoa",
+"Carbonara",
+"La Ibérica",
+"Burger",
+"Nachos"
 ];
 
 var pizzasKeyboard = function(halfsEnabled,customEnabled){
@@ -87,7 +87,7 @@ var handleMessage=function(message){
       case text.search(/\/terminar/i)==0:
       if(orders[chatId]&&orders[chatId].active){
         orders[chatId].active = false;
-          bot.sendMessage(chatId,resumen(orders[chatId],true),{reply_markup:JSON.stringify({hide_keyboard:true,selective:false})}).then(function(){});
+        bot.sendMessage(chatId,resumen(orders[chatId],true),{reply_markup:JSON.stringify({hide_keyboard:true,selective:false})}).then(function(){});
       }else{
         sendMessage(chatId,"Termíname esta 😘",message.message_id);
       }
@@ -123,78 +123,79 @@ var handleMessage=function(message){
       }
       break;
       default:
-      if(orders[chatId]&&orders[chatId].active){
-        var index = pizzas.indexOf(text);
-        console.log(text);
-        if(index!=-1){
-          var wasHalf = false;
-          for (var i = orders[chatId].awaitingHalfs.length - 1; i >= 0; i--) {
-            var awaitingHalf = orders[chatId].awaitingHalfs[i];
-            if(awaitingHalf.user == userName){
-              var pizza = orders[chatId].pizzas[awaitingHalf.pizzaIndex];
-              pizza.halfs[awaitingHalf.halfIndex++] = text;
-              wasHalf = true;
-              console.log("was half: ",awaitingHalf);
-              if(awaitingHalf.halfIndex==2){
-                orders[chatId].awaitingHalfs.splice(i,1);
-                sendMessage(message.chat.id,(text==="Hawaiana"?"MEDIA PIZZA CON PIÑA? SRSLY 😒? por esta vez la agrego al pedido, pero que no se repita. Parguela.":"Pos fale"),message.message_id);
+      if(!message.new_chat_member&&!message.left_chat_member){
+        if(orders[chatId]&&orders[chatId].active){
+          var index = pizzas.indexOf(text);
+          console.log(text);
+          if(index!=-1){
+            var wasHalf = false;
+            for (var i = orders[chatId].awaitingHalfs.length - 1; i >= 0; i--) {
+              var awaitingHalf = orders[chatId].awaitingHalfs[i];
+              if(awaitingHalf.user == userName){
+                var pizza = orders[chatId].pizzas[awaitingHalf.pizzaIndex];
+                pizza.halfs[awaitingHalf.halfIndex++] = text;
+                wasHalf = true;
+                console.log("was half: ",awaitingHalf);
+                if(awaitingHalf.halfIndex==2){
+                  orders[chatId].awaitingHalfs.splice(i,1);
+                  sendMessage(message.chat.id,(text==="Hawaiana"?"MEDIA PIZZA CON PIÑA? SRSLY 😒? por esta vez la agrego al pedido, pero que no se repita. Parguela.":"Pos fale"),message.message_id);
+                }
+                else{
+                  sendMessage(chatId,(text==="Hawaiana"?"Joder que parguela eres 😒, dime la otra mitad anda.":"Dime la segunda mitad"),message.message_id);
+                }
+                break;
               }
-              else{
-                sendMessage(chatId,(text==="Hawaiana"?"Joder que parguela eres 😒, dime la otra mitad anda.":"Dime la segunda mitad"),message.message_id);
-              }
-              break;
             }
-          }
-          if(!wasHalf){
-            orders[chatId].pizzas.push({
-              client:userName,
-              halfs:[text,text]
-            });
-            sendMessage(chatId,(text==="Hawaiana"?"PIZZA CON PIÑA? SRSLY😒😒😒😒😒? por esta vez la agrego al pedido, pero que no se repita. Parguela😘.":"Pos fale"),message.message_id);
-          }
-          console.log(orders[chatId].pizzas);
-        }else{
-          var wasCustom = false;
-          for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
-            var awaitingCustom = orders[chatId].awaitingCustoms[i];
-            if(awaitingCustom.user == userName){
+            if(!wasHalf){
               orders[chatId].pizzas.push({
                 client:userName,
                 halfs:[text,text]
               });
-              console.log("custom: ",orders[chatId].pizzas);
-              orders[chatId].awaitingCustoms.splice(i,1);
-              sendMessage(message.chat.id,"Pos fale",message.message_id);
-              wasCustom = true;
+              sendMessage(chatId,(text==="Hawaiana"?"PIZZA CON PIÑA? SRSLY😒😒😒😒😒? por esta vez la agrego al pedido, pero que no se repita. Parguela😘.":"Pos fale"),message.message_id);
             }
-          }
-          if(!wasCustom){
-            if(text == 'Por mitades'){
-              orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
-              orders[chatId].pizzas.push({
-                client:userName,
-                halfs:["Mitad vacía","Mitad vacía"]
-              });
-              console.log("mitades");
-              sendMessage(message.chat.id,"Que peñazo... elige primera mitad anda 😪",message.message_id);
-            }else{
-              if(text == 'Custom'){
-                orders[chatId].awaitingCustoms.push({user:userName});
-               sendMessage(chatId,"Dime como la quieres. Y la pizza también *inserte sticker de charlas aquí*",message.message_id);
+            console.log(orders[chatId].pizzas);
+          }else{
+            var wasCustom = false;
+            for (var i = orders[chatId].awaitingCustoms.length - 1; i >= 0; i--) {
+              var awaitingCustom = orders[chatId].awaitingCustoms[i];
+              if(awaitingCustom.user == userName){
+                orders[chatId].pizzas.push({
+                  client:userName,
+                  halfs:[text,text]
+                });
+                console.log("custom: ",orders[chatId].pizzas);
+                orders[chatId].awaitingCustoms.splice(i,1);
+                sendMessage(message.chat.id,"Pos fale",message.message_id);
+                wasCustom = true;
+              }
+            }
+            if(!wasCustom){
+              if(text == 'Por mitades'){
+                orders[chatId].awaitingHalfs.push({halfIndex:0,pizzaIndex:orders[chatId].pizzas.length,user:userName});
+                orders[chatId].pizzas.push({
+                  client:userName,
+                  halfs:["Mitad vacía","Mitad vacía"]
+                });
+                console.log("mitades");
+                sendMessage(message.chat.id,"Que peñazo... elige primera mitad anda 😪",message.message_id);
+              }else{
+                if(text == 'Custom'){
+                  orders[chatId].awaitingCustoms.push({user:userName});
+                  sendMessage(chatId,"Dime como la quieres. Y la pizza también *inserte sticker de charlas aquí*",message.message_id);
+                }
               }
             }
           }
-        }
-      }else{
-        if(!text.search(/\//i)==0)
-          sendMessage(chatId,"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",message.message_id);
+        }else{
+          if(!text.search(/\//i)==0)
+            sendMessage(chatId,"Madre de die que tontaco eres, que no hay ningun pedido activo! me largo a por un café ☕️",message.message_id);
+        }}
+        break;
       }
-      break;
     }
-  }
-};
+  };
 
-bot.on('message', handleMessage);
+  bot.on('message', handleMessage);
 
 
 

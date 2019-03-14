@@ -116,6 +116,9 @@ var handleMessage=function(message){
         sendMessage(message.chat.id,"Tu ya no comes, parguela 🌵",message.message_id);
       }
       break;
+      case text.search(/\/peleagitana/i)==0:
+      sendMessage(chatId, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+      break;
       default:
       if(!message.new_chat_member&&!message.left_chat_member){
         if(orders[chatId]&&orders[chatId].active){
@@ -190,8 +193,3 @@ var handleMessage=function(message){
   };
 
   bot.on('message', handleMessage);
-
-
-
-
-
